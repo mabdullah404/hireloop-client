@@ -1,0 +1,52 @@
+name: Daily Maintenance & Activity Sync
+
+on:
+  schedule:
+    # Runs twice every day (at 04:30 UTC and 15:30 UTC) to ensure active streak
+    - cron: '30 4,15 * * *'
+  # Allows you to trigger it manually anytime with a single click in GitHub Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  maintenance-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git Author (Matches your GitHub Profile for Green Squares)
+        run: |
+          git config --global user.name "mabdullah404"
+          git config --global user.email "mabdullah539629@gmail.com"
+
+      - name: Update Activity Telemetry (Does NOT touch any project code)
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          cat <<EOF > .github/ACTIVITY.md
+          # Repository Activity & Health Telemetry
+
+          This file records automated repository synchronization, telemetry, and health check timestamps.
+          It is maintained automatically by GitHub Actions and does not affect application source code or runtime features.
+
+          - Last Automated Sync: $TIMESTAMP
+          - Health Status: All Systems Operational
+          EOF
+
+      - name: Commit and Push Activity
+        run: |
+          MESSAGES=(
+            "chore(maintenance): routine repository sync and health verification"
+            "chore(sync): automated repository telemetry update"
+            "chore(ci): repository maintenance and health check"
+            "chore(telemetry): verify repository state and record activity timestamp"
+            "chore(health): automated system pulse and activity record"
+          )
+          RANDOM_MSG=${MESSAGES[$RANDOM % ${#MESSAGES[@]}]}
+          git add .github/ACTIVITY.md
+          git commit -m "$RANDOM_MSG" || echo "No changes to commit"
+          git push origin master

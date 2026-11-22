@@ -5,8 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
+    --font-heading: var(--font-manrope);
     --font-sans: var(--font-sans);
+    --font-badge: var(--font-space-mono);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -128,12 +129,39 @@
     }
 }
 
-/* Chrome autofill dark background fix */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #12121d inset !important;
-  transition: background-color 5000s ease-in-out 0s;
+/* ---------------------------------------------------------------------------
+   Shared style tokens — extracted from class strings that were repeated across
+   auth-form, jobs/new, and jobs (Figma surfaces, brand button, headings).
+   --------------------------------------------------------------------------- */
+
+/* Field surface (bg + border color, incl. focus/aria-invalid states).
+   Unlayered so it wins over shadcn component base utilities (e.g. the Input's
+   own dark:bg-input/30); nothing overrides a field's colors per-element. */
+.surface-field {
+  @apply border-white/10 bg-[#1A1A1F] focus:border-[#5C53FE]/60 focus-visible:border-[#5C53FE]/60 aria-invalid:border-destructive/60;
+}
+
+/* Card/section surface (auth card, form sections, table wrapper). */
+.surface-card {
+  @apply rounded-2xl border border-white/10 bg-[#101010]/95 shadow-[inset_0_3px_10px_rgba(255,255,255,0.04)];
+}
+
+/* Brand (primary) action button. */
+.btn-brand {
+  @apply bg-[#5C53FE] hover:bg-[#7B74FF];
+}
+
+/* Dashboard page H1 (Manrope via --font-heading). */
+.page-title {
+  @apply font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.02em] text-white;
+}
+
+/* Purple overline above page titles ("Create New Listing"). */
+.overline-label {
+  @apply text-xs font-medium tracking-wide text-[#8B85FF] uppercase;
+}
+
+/* Purple chip (numbered section bullets, row avatars, type pills). */
+.brand-chip {
+  @apply bg-[#5C53FE]/15 text-[#8B85FF];
 }

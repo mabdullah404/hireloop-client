@@ -1,214 +1,170 @@
+/**
+ * ==============================================================================
+ * FILE: client/components/hero-section.tsx
+ * ==============================================================================
+ * PURPOSE:
+ *   Figma `Design / Homepage` Hero Section:
+ *     - "50,000+ new jobs this month" glowing pill
+ *     - "Find Your Dream Job Today" display heading
+ *     - Dual search bar (Job title/skill/company + Location/Remote) -> navigates to `/browse-jobs`
+ *     - Trending Position quick-search chips
+ *     - Glowing purple horizon + Earth globe backdrop (`app/images/globe.png`)
+ *
+ * USED BY:
+ *   - `client/app/page.tsx`
+ * ==============================================================================
+ */
+
 "use client"
 
-import React, { useState } from "react"
+import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import {
-  Search,
-  MapPin,
-  Briefcase,
-  Building2,
-  Users,
-  Star,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { MapPin, Search, Sparkles } from "lucide-react"
+
+import globe from "@/app/images/globe.png"
+
+const TRENDING = [
+  "Product Designer",
+  "AI Engineering",
+  "Dev-ops Engineer",
+] as const
+
+const inputFieldClass =
+  "flex h-11 flex-1 items-center gap-2 text-base leading-[1.7]"
 
 export function HeroSection() {
   const router = useRouter()
-  const [keyword, setKeyword] = useState("")
-  const [location, setLocation] = useState("")
+  const [query, setQuery] = React.useState("")
+  const [location, setLocation] = React.useState("")
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+  // Submit handler: redirects to `/browse-jobs?search=...&location=...`
+  function onSubmit(event: React.FormEvent) {
+    event.preventDefault()
+
     const params = new URLSearchParams()
-    if (keyword) params.append("q", keyword)
-    if (location) params.append("location", location)
-    router.push(`/jobs?${params.toString()}`)
+    if (query.trim()) params.set("search", query.trim())
+    if (location.trim()) params.set("location", location.trim())
+
+    router.push(`/browse-jobs${params.size ? `?${params.toString()}` : ""}`)
   }
 
   return (
-    <section className="relative overflow-hidden pt-16 pb-24 md:pt-20 md:pb-32 bg-[#030308] text-white">
-      {/* Background Top Ambient Glow */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-[#5C53FE]/20 blur-[130px] rounded-full" />
-
-      <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-        {/* --- ১. টপ ব্যাজ (Side lines সহ) --- */}
-        <div className="flex items-center justify-center gap-3">
-          <div className="hidden sm:block w-16 h-px bg-gradient-to-r from-transparent to-white/20" />
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs tracking-wider text-gray-300 backdrop-blur-md">
-            <Briefcase className="size-3.5 text-amber-400" />
-            <span className="font-semibold uppercase tracking-wider text-[11px]">
-              50,000+ NEW JOBS THIS MONTH
+    <section className="relative overflow-hidden bg-[#010103] text-white">
+      <div className="relative z-10 mx-auto max-w-4xl px-4 pt-12 text-center sm:px-6">
+        {/* Top Glowing Badge */}
+        <div className="mb-8 flex items-center justify-center gap-4">
+          <div
+            aria-hidden
+            className="hidden h-px w-16 bg-gradient-to-r from-[#010123] to-[#A8A8A8] opacity-70 sm:block"
+          />
+          <div className="flex items-center gap-3 rounded-3xl bg-gradient-to-b from-[#474747] to-[#010102] px-6 py-2.5 shadow-[inset_0_0_6px_6px_rgba(255,255,255,0.1)]">
+            <Sparkles aria-hidden className="size-5 text-[#8F88FF]" />
+            <span className="font-badge text-base leading-[1.2] sm:text-lg">
+              50,000+ new jobs this month
             </span>
           </div>
-          <div className="hidden sm:block w-16 h-px bg-gradient-to-l from-transparent to-white/20" />
+          <div
+            aria-hidden
+            className="hidden h-px w-16 bg-gradient-to-l from-[#010123] to-[#A8A8A8] opacity-70 sm:block"
+          />
         </div>
 
-        {/* --- ২. মূল হেডলাইন --- */}
-        <h1 className="mt-8 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
-          Find Your Dream Job Today
-        </h1>
+        {/* Hero Headline & Subtitle */}
+        <div className="flex flex-col items-center gap-4">
+          <h1 className="font-heading text-[40px] leading-[1.15] font-bold tracking-[-0.02em] md:text-[56px]">
+            Find Your Dream Job Today
+          </h1>
+          <p className="max-w-2xl text-lg leading-[1.6] text-white/80 md:text-xl">
+            HireLoop connects top talent with world-class companies. Browse
+            thousands of curated opportunities and land your next role — faster.
+          </p>
+        </div>
 
-        {/* --- ৩. সাব-হেডলাইন --- */}
-        <p className="mt-4 max-w-xl mx-auto text-sm sm:text-base text-gray-400 leading-relaxed font-normal">
-          HireLoop connects top talent with world-class companies. Browse thousands of
-          curated opportunities and land your next role — faster.
-        </p>
-
-        {/* --- ৪. সার্চ বার (Dark Container + Purple Search Icon Button) --- */}
+        {/* Search Bar -> routes directly to /browse-jobs */}
         <form
-          onSubmit={handleSearch}
-          className="mt-8 max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-2 p-1.5 rounded-2xl border border-white/10 bg-[#0d0d15]/90 shadow-2xl shadow-black/80 backdrop-blur-md"
+          onSubmit={onSubmit}
+          role="search"
+          className="mt-8 rounded-2xl border border-white/20 bg-[#101010] p-2 md:p-3"
         >
-          {/* ইনপুট ১: Job title */}
-          <div className="flex flex-1 items-center gap-3 px-3 py-2 w-full">
-            <Search className="size-4 text-gray-400 shrink-0" />
-            <input
-              type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Job tilte, skill or company"
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray-500 font-normal"
-            />
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6 md:px-3">
+            <div className={inputFieldClass}>
+              <Search aria-hidden className="size-5 shrink-0 text-white/60" />
+              <input
+                name="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Job title, skill or company"
+                className="h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-white/60"
+              />
+            </div>
+
+            <div aria-hidden className="hidden h-6 w-px bg-white/20 md:block" />
+
+            <div className={inputFieldClass}>
+              <MapPin aria-hidden className="size-5 shrink-0 text-white/60" />
+              <input
+                name="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Location or Remote"
+                className="h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-white/60"
+              />
+            </div>
+
+            <button
+              type="submit"
+              aria-label="Search jobs"
+              className="mt-1 flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[#5C53FE] px-5 font-medium transition-colors hover:bg-[#7B74FF] md:mt-0 md:w-12 md:px-0"
+            >
+              <Search aria-hidden className="size-5" />
+              <span className="md:hidden">Search Jobs</span>
+            </button>
           </div>
-
-          {/* ডিভাইডার */}
-          <div className="hidden sm:block w-px h-6 bg-white/10" />
-
-          {/* ইনপুট ২: Location */}
-          <div className="flex flex-1 items-center gap-3 px-3 py-2 w-full">
-            <MapPin className="size-4 text-gray-400 shrink-0" />
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Location or Remote"
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray-500 font-normal"
-            />
-          </div>
-
-          {/* সার্চ বাটন (Icon Only) */}
-          <Button
-            type="submit"
-            className="w-full sm:w-11 h-11 bg-[#5C53FE] hover:bg-[#4D44EE] text-white rounded-xl flex items-center justify-center p-0 shrink-0 shadow-lg shadow-[#5C53FE]/30 transition-all"
-            aria-label="Search"
-          >
-            <Search className="size-4" />
-          </Button>
         </form>
 
-        {/* --- ৫. ট্রেন্ডিং পজিশন ট্যাগস --- */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-          <span className="text-gray-400 font-normal">Trending Position:</span>
-          <Link
-            href="/jobs?q=Product+Designer"
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
-          >
-            Product Designer
-          </Link>
-          <Link
-            href="/jobs?q=AI+Engineering"
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
-          >
-            AI Engineering
-          </Link>
-          <Link
-            href="/jobs?q=Dev-ops+Engineer"
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
-          >
-            Dev-ops Engineer
-          </Link>
+        {/* Trending Position Pills */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <span className="text-sm text-white/75">Trending Position</span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {TRENDING.map((label) => (
+              <Link
+                key={label}
+                href={`/browse-jobs?search=${encodeURIComponent(label)}`}
+                className="rounded-full border border-white/10 bg-[#1A1A1B] px-3.5 py-1.5 text-sm leading-[1.5] transition-colors hover:border-[#5C53FE]/50 hover:bg-[#5C53FE]"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* --- ৬. গ্লোব সেকশন (Glowing Atmosphere + Globe + Text Over Globe) --- */}
-        <div className="relative mt-16 sm:mt-20">
-          {/* গ্লোবের পেছনের তীব্র নীল-বেগুনি আলো (Atmospheric Glow) */}
-          <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-[650px] sm:w-[850px] h-[350px] bg-[#3B28CC]/40 blur-[110px] rounded-full" />
-
-          {/* গ্লোব ইমেজ */}
-          <div className="relative mx-auto max-w-4xl flex justify-center">
-            <Image
-              src="/images/globe.png"
-              alt="Global Opportunities"
-              width={1000}
-              height={550}
-              priority
-              className="w-full max-w-3xl h-auto object-contain opacity-95"
-            />
-
-            {/* গ্লোবের উপরের লেখা (Assisting over 15,000 job seekers...) */}
-            <div className="absolute top-[48%] sm:top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4 text-center">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-white tracking-tight leading-snug">
-                Assisting over <span className="text-white font-semibold">15,000 job seekers</span>
-                <br />
-                find their dream positions.
-              </h2>
-            </div>
-          </div>
-
-          {/* --- ৭. ৪টি আলাদা ডার্ক কার্ড (4 Separate Cards) --- */}
-          <div className="relative -mt-12 sm:-mt-20 max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 px-2 sm:px-0">
-            {/* Card 1: 50K */}
-            <div className="flex flex-col justify-between p-6 rounded-2xl border border-white/10 bg-[#0a0a12]/95 backdrop-blur-md shadow-2xl text-left h-44 hover:border-white/20 transition-all">
-              <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <Briefcase className="size-4 text-gray-300" />
-              </div>
-              <div>
-                <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                  50K
-                </span>
-                <p className="mt-1 text-xs text-gray-400 font-medium">
-                  Active Jobs
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2: 12K */}
-            <div className="flex flex-col justify-between p-6 rounded-2xl border border-white/10 bg-[#0a0a12]/95 backdrop-blur-md shadow-2xl text-left h-44 hover:border-white/20 transition-all">
-              <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <Building2 className="size-4 text-gray-300" />
-              </div>
-              <div>
-                <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                  12K
-                </span>
-                <p className="mt-1 text-xs text-gray-400 font-medium">
-                  Companies
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3: 2M */}
-            <div className="flex flex-col justify-between p-6 rounded-2xl border border-white/10 bg-[#0a0a12]/95 backdrop-blur-md shadow-2xl text-left h-44 hover:border-white/20 transition-all">
-              <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <Users className="size-4 text-gray-300" />
-              </div>
-              <div>
-                <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                  2M
-                </span>
-                <p className="mt-1 text-xs text-gray-400 font-medium">
-                  Job Seekers
-                </p>
-              </div>
-            </div>
-
-            {/* Card 4: 97% */}
-            <div className="flex flex-col justify-between p-6 rounded-2xl border border-white/10 bg-[#0a0a12]/95 backdrop-blur-md shadow-2xl text-left h-44 hover:border-white/20 transition-all">
-              <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                <Star className="size-4 text-gray-300" />
-              </div>
-              <div>
-                <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                  97%
-                </span>
-                <p className="mt-1 text-xs text-gray-400 font-medium">
-                  Satisfication Rate
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Glowing Purple Horizon + Earth Globe */}
+      <div className="relative z-0 h-[360px] sm:h-[480px] lg:h-[620px]">
+        <div
+          aria-hidden
+          className="absolute top-1/2 left-1/2 h-[min(900px,180vw)] w-[min(1200px,86vw)] max-w-none -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5C53FE] blur-[148px]"
+        />
+        <div
+          aria-hidden
+          className="absolute top-1/2 left-1/2 h-[min(900px,178vw)] w-[min(1160px,84vw)] max-w-none -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#010103]"
+        />
+        <div className="absolute inset-y-0 left-1/2 w-full max-w-[1180px] -translate-x-1/2">
+          <Image
+            src={globe}
+            alt=""
+            aria-hidden
+            priority
+            placeholder="blur"
+            sizes="(min-width: 1248px) 1180px, 100vw"
+            className="object-cover object-bottom select-none"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 mix-blend-screen [background:radial-gradient(75%_60%_at_50%_32%,rgba(92,83,254,0.50)_0%,rgba(92,83,254,0.22)_42%,transparent_72%)]"
+          />
         </div>
       </div>
     </section>
